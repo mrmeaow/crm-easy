@@ -66,7 +66,8 @@ jobs:
           path: release/CRM-Easy-Setup-*.exe
       - name: Sign installers (SignPath Foundation) - placeholder
         id: signpath
-        run: echo "SignPath skipped — secret not configured"
+        if: ${{ secrets.SIGNPATH_API_TOKEN != '' }}
+        run: echo "SignPath skipped change"
       - name: Upload signed installers
         uses: softprops/action-gh-release@v2
         with:
