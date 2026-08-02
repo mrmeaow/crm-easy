@@ -1,13 +1,16 @@
-name: CI
+name: Release
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
 
 jobs:
   linux:
-    name: Linux (lint · typecheck · test · package)
+    name: Build Linux packages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,35 +22,23 @@ jobs:
         run: npm ci
       - name: Rebuild native modules for Electron
         run: npm run postinstall
-      - name: Lint
-        run: npm run lint
-      - name: Format check
-        run: npm run format:check
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Unit tests
-        run: npm test
-      - name: Build
-        run: npx electron-vite build
       - name: Install packaging tools (bsdtar for pacman target)
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
-      - name: Package (deb, rpm, AppImage, pacman)
+      - name: Package
         run: npx electron-builder --linux deb rpm AppImage pacman --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Linux packages
-        uses: actions/upload-artifact@v4
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
         with:
-          name: crm-easy-linux-packages
-          path: |
+          files: |
             release/*.deb
             release/*.rpm
             release/*.AppImage
             release/*.pacman
-          if-no-files-found: error
 
   windows:
-    name: Windows (typecheck · test · package)
+    name: Build Windows installer (.exe)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,19 +50,11 @@ jobs:
         run: npm ci
       - name: Rebuild native modules for Electron
         run: npm run postinstall
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Unit tests
-        run: npm test
-      - name: Build
-        run: npx electron-vite build
-      - name: Package (NSIS .exe)
+      - name: Package
         run: npx electron-builder --win nsis --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Windows installer
-        uses: actions/upload-artifact@v4
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
         with:
-          name: crm-easy-windows-installer
-          path: release/CRM-Easy-Setup-*.exe
-          if-no-files-found: error
+          files: release/CRM-Easy-Setup-*.exe

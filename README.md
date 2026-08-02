@@ -60,12 +60,23 @@ npm run lint           # ESLint
 npm run format         # Prettier (write)
 npm test               # Vitest unit tests
 npm run build          # typecheck + electron-vite build → out/
-npm run build:linux    # + electron-builder: AppImage, deb, rpm, pacman
-npm run build:win      # + electron-builder: NSIS, MSI (run on Windows)
+npm run build:linux    # + electron-builder: .deb and .rpm (priority targets)
+npm run build:linux:appimage   # + AppImage (portable fallback)
+npm run build:linux:pacman     # + Arch .pacman (needs bsdtar, see note)
+npm run build:win      # + NSIS .exe installer (build on Windows or in CI)
 ```
 
-> Note: the `pacman` target requires `bsdtar` (`libarchive-tools` on Debian/Ubuntu;
-> the CI workflow installs it automatically).
+**Packaging priorities:** `.deb` (Debian/Ubuntu) and `.rpm` (Fedora/RHEL) are the
+primary Linux artifacts, `.exe` (NSIS) for Windows. GitHub Actions builds all
+targets on push/PR (artifacts) and attaches them to GitHub Releases on `v*` tags.
+
+> Notes:
+>
+> - The `pacman` target requires `bsdtar` (`libarchive-tools` on Debian/Ubuntu;
+>   the CI workflow installs it automatically).
+> - Building the Windows NSIS installer on Linux requires `wine` (used to embed
+>   the icon/metadata). On machines without wine, build on Windows or rely on CI:
+>   `npx electron-builder --win nsis` works on the Windows runner.
 
 ### DB migrations (Drizzle)
 

@@ -17,11 +17,12 @@ extraResources:
     to: drizzle
 
 linux:
+  # Priority: .deb and .rpm first; AppImage as portable fallback.
+  # pacman is available via: npx electron-builder --linux pacman (needs bsdtar)
   target:
-    - AppImage
     - deb
     - rpm
-    - pacman
+    - AppImage
   category: Office
   maintainer: CRM-Easy
   synopsis: Offline-first desktop CRM for individuals
@@ -30,9 +31,9 @@ linux:
       Name: CRM-Easy
 
 win:
+  # Priority: NSIS .exe installer. (MSI available via: npx electron-builder --win msi)
   target:
     - nsis
-    - msi
 
 nsis:
   oneClick: false
