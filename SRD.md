@@ -380,7 +380,8 @@ Entity drafts: `contacts`, `leads`, `deals`, `pipeline_stages`, `activities`,
 ## 10. Acceptance Criteria (MVP Definition of Done)
 
 1. App installs and runs on: Debian/Ubuntu (`.deb`), Fedora (`.rpm`), Arch (`.pacman`),
-   portable Linux (AppImage), Windows 10/11 (`.exe` installer + portable).
+   portable Linux (AppImage), Windows 10/11 (`.exe` installer + portable) — each on
+   **both x64 and ARM64** (macOS intentionally on hold).
 2. All MVP `FR-*` (priority M) items implemented and passing tests.
 3. UI fully available in Bangla and English; switching works without restart.
 4. App works 100% offline; no network calls unless user triggers backup/sync.

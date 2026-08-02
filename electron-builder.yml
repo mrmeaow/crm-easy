@@ -17,12 +17,14 @@ extraResources:
     to: drizzle
 
 linux:
+  # Architectures: x64 and arm64 (both built from any host via cross-compile).
   # Priority: .deb and .rpm first; AppImage as portable fallback.
-  # pacman is available via: npx electron-builder --linux pacman (needs bsdtar)
+  # pacman available via: npx electron-builder --linux pacman (needs bsdtar).
   target:
     - deb
     - rpm
     - AppImage
+  artifactName: crm-easy-${version}-${arch}.${ext}
   category: Office
   maintainer: CRM-Easy
   synopsis: Offline-first desktop CRM for individuals
@@ -31,6 +33,7 @@ linux:
       Name: CRM-Easy
 
 win:
+  # Architectures: x64 and arm64 (Windows on ARM).
   # Priority: NSIS .exe installer. (MSI available via: npx electron-builder --win msi)
   target:
     - nsis
@@ -38,7 +41,7 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  artifactName: ${productName}-Setup-${version}.${ext}
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
 
 msi:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}-${version}-${arch}.${ext}

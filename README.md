@@ -66,9 +66,21 @@ npm run build:linux:pacman     # + Arch .pacman (needs bsdtar, see note)
 npm run build:win      # + NSIS .exe installer (build on Windows or in CI)
 ```
 
-**Packaging priorities:** `.deb` (Debian/Ubuntu) and `.rpm` (Fedora/RHEL) are the
-primary Linux artifacts, `.exe` (NSIS) for Windows. GitHub Actions builds all
-targets on push/PR (artifacts) and attaches them to GitHub Releases on `v*` tags.
+**Supported platforms & architectures** (no platform lock-in; macOS on hold):
+
+| Target                       | x64 (Intel/AMD) | ARM64 (Apple Silicon-class ARM chips: Snapdragon X, etc.) |
+| ---------------------------- | --------------- | --------------------------------------------------------- |
+| Linux `.deb` (Debian/Ubuntu) | ✅              | ✅                                                        |
+| Linux `.rpm` (Fedora/RHEL)   | ✅              | ✅                                                        |
+| Linux `.AppImage` (portable) | ✅              | ✅                                                        |
+| Linux `.pacman` (Arch)       | ✅              | ✅                                                        |
+| Windows `.exe` (NSIS)        | ✅              | ✅ (Windows on ARM)                                       |
+| macOS                        | on hold         | on hold                                                   |
+
+Every script builds **both architectures** (`--x64 --arm64`) via electron-builder
+cross-compilation — one host produces all binaries. GitHub Actions builds all
+targets on push/PR (uploaded as artifacts) and attaches them to GitHub Releases
+on `v*` tags.
 
 > Notes:
 >

@@ -31,8 +31,8 @@ jobs:
         run: npx electron-vite build
       - name: Install packaging tools (bsdtar for pacman target)
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
-      - name: Package (deb, rpm, AppImage, pacman)
-        run: npx electron-builder --linux deb rpm AppImage pacman --publish never
+      - name: Package (deb, rpm, AppImage, pacman · x64 + arm64)
+        run: npx electron-builder --linux deb rpm AppImage pacman --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Linux packages
@@ -65,8 +65,8 @@ jobs:
         run: npm test
       - name: Build
         run: npx electron-vite build
-      - name: Package (NSIS .exe)
-        run: npx electron-builder --win nsis --publish never
+      - name: Package (NSIS .exe · x64 + arm64)
+        run: npx electron-builder --win nsis --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Windows installer

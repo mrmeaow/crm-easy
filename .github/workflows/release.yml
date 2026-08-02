@@ -25,7 +25,7 @@ jobs:
       - name: Install packaging tools (bsdtar for pacman target)
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
       - name: Package
-        run: npx electron-builder --linux deb rpm AppImage pacman --publish never
+        run: npx electron-builder --linux deb rpm AppImage pacman --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release assets
@@ -51,7 +51,7 @@ jobs:
       - name: Rebuild native modules for Electron
         run: npm run postinstall
       - name: Package
-        run: npx electron-builder --win nsis --publish never
+        run: npx electron-builder --win nsis --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release assets

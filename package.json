@@ -22,11 +22,12 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "build": "npm run typecheck && electron-vite build",
-    "build:linux": "npm run build && electron-builder --linux deb rpm",
-    "build:linux:appimage": "npm run build && electron-builder --linux AppImage",
-    "build:linux:pacman": "npm run build && electron-builder --linux pacman",
-    "build:win": "npm run build && electron-builder --win nsis",
-    "build:win:msi": "npm run build && electron-builder --win msi",
+    "build:linux": "npm run build && electron-builder --linux deb rpm --x64 --arm64",
+    "build:linux:all": "npm run build && electron-builder --linux deb rpm AppImage pacman --x64 --arm64",
+    "build:linux:appimage": "npm run build && electron-builder --linux AppImage --x64 --arm64",
+    "build:linux:pacman": "npm run build && electron-builder --linux pacman --x64 --arm64",
+    "build:win": "npm run build && electron-builder --win nsis --x64 --arm64",
+    "build:win:msi": "npm run build && electron-builder --win msi --x64 --arm64",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
