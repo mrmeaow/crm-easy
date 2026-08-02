@@ -88,13 +88,13 @@ Grab the installer for your OS from the **Releases page** of this repository
 (pick the `x86_64`/`amd64` file on Intel/AMD machines, the `arm64`/`aarch64`
 file on ARM machines):
 
-| OS                   | File          | Install                                                                       |
-| -------------------- | ------------- | ----------------------------------------------------------------------------- |
-| Debian / Ubuntu      | `.deb`        | `sudo apt install ./crm-easy-0.1.0-amd64.deb`                                 |
-| Fedora / RHEL        | `.rpm`        | `sudo dnf install crm-easy-0.1.0-x86_64.rpm`                                  |
-| Arch                 | `.pacman`     | `sudo pacman -U crm-easy-0.1.0-x86_64.pacman`                                 |
-| Any Linux (portable) | `.AppImage`   | `chmod +x crm-easy-0.1.0-x86_64.AppImage && ./crm-easy-0.1.0-x86_64.AppImage` |
-| Windows 10/11        | `.exe` (NSIS) | run `CRM-Easy-Setup-0.1.0-x64.exe`                                            |
+| OS                   | File          | Install                                                                                                                   |
+| -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Debian / Ubuntu      | `.deb`        | `sudo apt install ./crm-easy-0.1.0-amd64.deb`                                                                             |
+| Fedora / RHEL        | `.rpm`        | `sudo dnf install crm-easy-0.1.0-x86_64.rpm`                                                                              |
+| Arch                 | `.pacman`     | `sudo pacman -U crm-easy-0.1.0-x86_64.pacman`                                                                             |
+| Any Linux (portable) | `.AppImage`   | `chmod +x crm-easy-0.1.0-x86_64.AppImage && ./crm-easy-0.1.0-x86_64.AppImage`                                             |
+| Windows 10/11        | `.exe` (NSIS) | `CRM-Easy-Setup-0.1.0.exe` (**universal** — works on x64 and ARM64) or the per-arch files `...-x64.exe` / `...-arm64.exe` |
 
 > Windows shows a SmartScreen "unknown publisher" warning (the installer is not
 > yet code-signed) — click **More info → Run anyway**. On Ubuntu 22.04 the
