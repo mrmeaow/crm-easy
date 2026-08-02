@@ -58,7 +58,23 @@ jobs:
         run: npx electron-builder --win nsis --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload release assets
+      - name: Upload unsigned installers (for SignPath)
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-installers
+          path: release/CRM-Easy-Setup-*.exe
+      - name: Sign installers (SignPath Foundation) - placeholder
+        id: signpath
+        if: ${{ secrets.SIGNPATH_API_TOKEN != '' }}
+        run: echo "SignPath skipped — secret not configured"
+      - name: Upload signed installers
         uses: softprops/action-gh-release@v2
+        if: steps.signpath.outcome == 'success'
+        with:
+          files: signed/*.exe
+      - name: Upload installers (unsigned fallback)
+        uses: softprops/action-gh-release@v2
+        if: steps.signpath.outcome != 'success'
         with:
           files: release/CRM-Easy-Setup-*.exe
