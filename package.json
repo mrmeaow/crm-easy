@@ -4,7 +4,7 @@
   "description": "CRM-Easy — offline-first desktop CRM for individuals (Electron + React + SQLite)",
   "main": "./out/main/index.js",
   "author": "CRM-Easy",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MIT",
   "homepage": "https://crmeasy.app",
   "desktopName": "crm-easy",
   "private": true,

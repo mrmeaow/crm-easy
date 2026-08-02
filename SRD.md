@@ -20,16 +20,16 @@ and release planning. It is intended for the product owner, developers, and revi
 
 ## 2. Project Overview
 
-| Item           | Description                                                                                                                                                             |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product name   | CRM-Easy                                                                                                                                                                |
-| Product type   | Offline-first desktop CRM suite                                                                                                                                         |
-| Primary UI     | Desktop application (Electron + React)                                                                                                                                  |
-| Storage        | Local-first (on-device database). Cloud optional, never required                                                                                                        |
-| Languages (UI) | Bangla (bn) and English (en), switchable at runtime                                                                                                                     |
-| Target OS      | Linux (Debian/Ubuntu `.deb`, Fedora `.rpm`, Arch `.pacman`, portable formats), Windows `.exe`/`.msi`                                                                    |
-| Post-MVP OS    | macOS (`.dmg`)                                                                                                                                                          |
-| License        | Source-available, dual license: **free for individuals (personal, non-commercial use)**; **paid commercial license** required for any business/commercial use (see §12) |
+| Item           | Description                                                                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product name   | CRM-Easy                                                                                                                                                 |
+| Product type   | Offline-first desktop CRM suite                                                                                                                          |
+| Primary UI     | Desktop application (Electron + React)                                                                                                                   |
+| Storage        | Local-first (on-device database). Cloud optional, never required                                                                                         |
+| Languages (UI) | Bangla (bn) and English (en), switchable at runtime                                                                                                      |
+| Target OS      | Linux (Debian/Ubuntu `.deb`, Fedora `.rpm`, Arch `.pacman`, portable formats), Windows `.exe`/`.msi`                                                     |
+| Post-MVP OS    | macOS (`.dmg`)                                                                                                                                           |
+| License        | Open source, **MIT** — free for everyone including commercial use (see §12). MIT chosen to qualify for the SignPath Foundation free code-signing program |
 
 ### 2.1 Vision
 
@@ -394,15 +394,15 @@ Entity drafts: `contacts`, `leads`, `deals`, `pipeline_stages`, `activities`,
 
 ## 11. Risks & Mitigations
 
-| Risk                                        | Impact           | Mitigation                                                                      |
-| ------------------------------------------- | ---------------- | ------------------------------------------------------------------------------- |
-| Electron bundle size / RAM usage            | Perf             | Lazy-load modules, dynamic import of cloud SDKs, worker threads                 |
-| `better-sqlite3` native module packaging    | Install issues   | electron-builder native rebuild; test on all targets in CI matrix               |
-| Bangla font rendering/Linux distro variance | UX               | Bundle a Bangla font (e.g., Noto Sans Bengali subset); CSS font stack fallbacks |
-| Data loss from corruption                   | Trust            | WAL mode, startup integrity check, auto-restore, encrypted backups              |
-| Dropbox/Drive API changes                   | Feature risk     | Adapter interface; S3-compatible path is the stable primary                     |
-| Scope creep (features beyond MVP)           | Delay            | Strict MVP gate; non-goals enforced; backlog-only items labeled `C`             |
-| Windows Defender / code signing             | Install friction | Code-signing cert planned for release builds; document SmartScreen workaround   |
+| Risk                                        | Impact           | Mitigation                                                                                                                                        |
+| ------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Electron bundle size / RAM usage            | Perf             | Lazy-load modules, dynamic import of cloud SDKs, worker threads                                                                                   |
+| `better-sqlite3` native module packaging    | Install issues   | electron-builder native rebuild; test on all targets in CI matrix                                                                                 |
+| Bangla font rendering/Linux distro variance | UX               | Bundle a Bangla font (e.g., Noto Sans Bengali subset); CSS font stack fallbacks                                                                   |
+| Data loss from corruption                   | Trust            | WAL mode, startup integrity check, auto-restore, encrypted backups                                                                                |
+| Dropbox/Drive API changes                   | Feature risk     | Adapter interface; S3-compatible path is the stable primary                                                                                       |
+| Scope creep (features beyond MVP)           | Delay            | Strict MVP gate; non-goals enforced; backlog-only items labeled `C`                                                                               |
+| Windows Defender / code signing             | Install friction | SignPath Foundation free OSS signing (publisher: SignPath Foundation; SmartScreen reputation builds over time); SmartScreen workaround documented |
 
 ---
 
@@ -410,11 +410,11 @@ Entity drafts: `contacts`, `leads`, `deals`, `pipeline_stages`, `activities`,
 
 ### 12.1 Resolved Decisions
 
-| #   | Topic               | Decision                                                                                                                                                                                                                                                                                                                                                                  |
-| --- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | License model       | **Dual license, source-available**: individuals may use the software **free** for personal, non-commercial use. Any **commercial/business use requires a paid license** (per-seat or per-license, TBD). Implemented as a source-available license (e.g., PolyForm Noncommercial or custom EULA) + paid commercial license. Final wording to be reviewed by legal counsel. |
-| 2   | Auto-update channel | **Generic provider on a user-owned S3-compatible bucket** (`electron-updater`), with separate staging/production channels. Rationale: no public repo required (protects source under the source-available model), reuses existing S3-compatible infra, full release control.                                                                                              |
-| 3   | Language selection  | Chosen **explicitly in the first-run setup wizard** (Bn/En), stored, switchable in Settings anytime (I18N-06). No OS-locale auto-detection.                                                                                                                                                                                                                               |
+| #   | Topic               | Decision                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | License model       | **Open source — MIT** (OSI-approved, no dual-licensing). Chosen over the earlier source-available + paid-commercial plan to qualify for the **SignPath Foundation** free code-signing program (requires an OSI license without commercial dual-licensing). Trade-off accepted: no paid license revenue from commercial users; monetization via future donations/paid services (see §12.2.5). |
+| 2   | Auto-update channel | **Generic provider on a user-owned S3-compatible bucket** (`electron-updater`), with separate staging/production channels. Rationale: reuses existing S3-compatible infra, full release control (public MIT repo makes source public regardless).                                                                                                                                            |
+| 3   | Language selection  | Chosen **explicitly in the first-run setup wizard** (Bn/En), stored, switchable in Settings anytime (I18N-06). No OS-locale auto-detection.                                                                                                                                                                                                                                                  |
 
 ### 12.2 Open Questions (To Be Decided)
 
@@ -422,7 +422,7 @@ Entity drafts: `contacts`, `leads`, `deals`, `pipeline_stages`, `activities`,
 2. Bangla digits: default to Bangla numerals or Latin digits in UI input fields?
 3. Currency default: BDT with multi-currency support, or user-chosen single currency first?
 4. Windows installer type priority: NSIS `.exe` vs WiX `.msi` first?
-5. Paid commercial license mechanics: per-seat, per-device, or one-time per business? Trial/grace period?
+5. ~~Paid commercial license mechanics~~ — **Resolved:** no paid license; MIT open source. Monetization alternatives (donations, hosted services, support) to be revisited post-MVP.
 
 ---
 

@@ -3,6 +3,8 @@
 Offline-first desktop CRM for individuals — simple enough for anyone to operate.
 Built with **Electron + React + TypeScript + SQLite**. Your data stays on your device.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.md)
+
 > Full product requirements: see [SRD.md](./SRD.md)
 
 ## Status
@@ -96,10 +98,25 @@ file on ARM machines):
 | Any Linux (portable) | `.AppImage`   | `chmod +x crm-easy-0.1.0-x86_64.AppImage && ./crm-easy-0.1.0-x86_64.AppImage`                                             |
 | Windows 10/11        | `.exe` (NSIS) | `CRM-Easy-Setup-0.1.0.exe` (**universal** — works on x64 and ARM64) or the per-arch files `...-x64.exe` / `...-arm64.exe` |
 
-> Windows shows a SmartScreen "unknown publisher" warning (the installer is not
-> yet code-signed) — click **More info → Run anyway**. On Ubuntu 22.04 the
-> AppImage needs `libfuse2` (`sudo apt install libfuse2`) or run with
-> `--appimage-extract-and-run`.
+> Windows shows a SmartScreen "unknown publisher" warning until the release is
+> signed and gains reputation (SignPath Foundation free code-signing application
+> in progress — see [Code Signing Policy](#code-signing-policy)). Click
+> **More info → Run anyway**. On Ubuntu 22.04 the AppImage needs `libfuse2`
+> (`sudo apt install libfuse2`) or run with `--appimage-extract-and-run`.
+
+## Code Signing Policy
+
+_Free code signing provided by [SignPath.io](https://signpath.io), certificate
+by [SignPath Foundation](https://signpath.org)._
+
+- Windows installers (`.exe`) are signed only after SignPath Foundation approves
+  this project (application in progress; pending approval the installers ship
+  unsigned with the SmartScreen note above).
+- Signing applies to the `v*` tag release build only, built by GitHub Actions
+  from this repository — no other binaries are signed.
+- The private key never leaves SignPath's HSM; we never handle it.
+- Users can verify the signature in Windows: right-click the `.exe` →
+  **Properties → Digital Signatures**.
 
 > Notes:
 >
@@ -133,6 +150,7 @@ create a new one.
 ## Roadmap
 
 See [SRD.md](./SRD.md) §9. Shipped in MVP: setup wizard, CSV/XLSX import, merge
-dedupe, notes + activity timeline, scheduled backups with retention. Next up:
-attachments, auto-update (S3-compatible), Windows code signing, macOS builds
-(on hold), cloud sync.
+dedupe, notes + activity timeline, scheduled backups with retention, x64+arm64
+packaging for Linux and Windows. Next up: SignPath Foundation code-signing
+(application in progress), attachments, auto-update (S3-compatible), macOS
+builds (on hold), cloud sync.
