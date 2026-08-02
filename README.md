@@ -7,7 +7,7 @@ Built with **Electron + React + TypeScript + SQLite**. Your data stays on your d
 
 ## Status
 
-MVP core in progress — all of these work end-to-end (renderer → IPC → SQLite):
+MVP complete — all of these work end-to-end (renderer → IPC → SQLite):
 
 - **Contacts** — CRUD, search, delete
 - **Leads** — Kanban board with drag-and-drop between stages, add/edit/convert to contact
@@ -82,6 +82,25 @@ cross-compilation — one host produces all binaries. GitHub Actions builds all
 targets on push/PR (uploaded as artifacts) and attaches them to GitHub Releases
 on `v*` tags.
 
+## Download & Install
+
+Grab the installer for your OS from the **Releases page** of this repository
+(pick the `x86_64`/`amd64` file on Intel/AMD machines, the `arm64`/`aarch64`
+file on ARM machines):
+
+| OS                   | File          | Install                                                                       |
+| -------------------- | ------------- | ----------------------------------------------------------------------------- |
+| Debian / Ubuntu      | `.deb`        | `sudo apt install ./crm-easy-0.1.0-amd64.deb`                                 |
+| Fedora / RHEL        | `.rpm`        | `sudo dnf install crm-easy-0.1.0-x86_64.rpm`                                  |
+| Arch                 | `.pacman`     | `sudo pacman -U crm-easy-0.1.0-x86_64.pacman`                                 |
+| Any Linux (portable) | `.AppImage`   | `chmod +x crm-easy-0.1.0-x86_64.AppImage && ./crm-easy-0.1.0-x86_64.AppImage` |
+| Windows 10/11        | `.exe` (NSIS) | run `CRM-Easy-Setup-0.1.0-x64.exe`                                            |
+
+> Windows shows a SmartScreen "unknown publisher" warning (the installer is not
+> yet code-signed) — click **More info → Run anyway**. On Ubuntu 22.04 the
+> AppImage needs `libfuse2` (`sudo apt install libfuse2`) or run with
+> `--appimage-extract-and-run`.
+
 > Notes:
 >
 > - The `pacman` target requires `bsdtar` (`libarchive-tools` on Debian/Ubuntu;
@@ -110,11 +129,10 @@ create a new one.
 - **Linux sandbox:** on some dev machines Electron's SUID sandbox helper needs
   `chown root:root node_modules/electron/dist/chrome-sandbox && chmod 4755 ...`
   (or run with `--no-sandbox` for local testing only; packaged builds are unaffected).
-- **Icons:** not yet added — add `build/icon.png` (512×512), `build/icon.ico`, etc.
-  before the first release.
 
 ## Roadmap
 
-See [SRD.md](./SRD.md) §9. Next up: import (.csv/.xlsx), notes + activity timeline,
-first-run setup wizard (language choice), scheduled backups, attachments,
-auto-update (S3-compatible generic provider).
+See [SRD.md](./SRD.md) §9. Shipped in MVP: setup wizard, CSV/XLSX import, merge
+dedupe, notes + activity timeline, scheduled backups with retention. Next up:
+attachments, auto-update (S3-compatible), Windows code signing, macOS builds
+(on hold), cloud sync.
