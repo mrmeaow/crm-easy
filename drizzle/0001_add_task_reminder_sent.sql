@@ -1,0 +1,1 @@
+ALTER TABLE `tasks` ADD `reminder_sent_at` integer;

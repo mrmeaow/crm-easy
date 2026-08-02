@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@shared/*": ["./src/shared/*"]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "src/main/**/*",
+    "src/preload/**/*",
+    "src/shared/**/*",
+    "electron.vite.config.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts"
+  ]
+}

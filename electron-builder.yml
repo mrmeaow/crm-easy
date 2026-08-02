@@ -1,0 +1,43 @@
+appId: com.crmeasy.app
+productName: CRM-Easy
+copyright: Copyright © 2026 CRM-Easy
+
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - out/**
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!tests/*'
+
+extraResources:
+  - from: drizzle
+    to: drizzle
+
+linux:
+  target:
+    - AppImage
+    - deb
+    - rpm
+    - pacman
+  category: Office
+  maintainer: CRM-Easy
+  synopsis: Offline-first desktop CRM for individuals
+  desktop:
+    entry:
+      Name: CRM-Easy
+
+win:
+  target:
+    - nsis
+    - msi
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+msi:
+  artifactName: ${productName}-${version}.${ext}
