@@ -24,6 +24,8 @@ jobs:
         run: npm run postinstall
       - name: Install packaging tools (bsdtar for pacman target)
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
+      - name: Build
+        run: npx electron-vite build
       - name: Package
         run: npx electron-builder --linux deb rpm AppImage pacman --x64 --arm64 --publish never
         env:
@@ -50,6 +52,8 @@ jobs:
         run: npm ci
       - name: Rebuild native modules for Electron
         run: npm run postinstall
+      - name: Build
+        run: npx electron-vite build
       - name: Package
         run: npx electron-builder --win nsis --x64 --arm64 --publish never
         env:
