@@ -1,4 +1,4 @@
-name: Release v0.2
+name: Release
 
 on:
   push:
@@ -6,83 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  linux:
-    name: Build Linux packages
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Rebuild native modules for Electron
-        run: npm run postinstall
-      - name: Install packaging tools (bsdtar for pacman target)
-        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
-      - name: Build
-        run: npx electron-vite build
-      - name: Package
-        run: npx electron-builder --linux deb rpm AppImage pacman --x64 --arm64 --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            release/*.deb
-            release/*.rpm
-            release/*.AppImage
-            release/*.pacman
-
-  windows:
-    name: Build Windows installer (.exe)
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Rebuild native modules for Electron
-        run: npm run postinstall
-      - name: Build
-        run: npx electron-vite build
-      - name: Package
-        run: npx electron-builder --win nsis --x64 --arm64 --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload unsigned installers (for SignPath)
-        id: upload-unsigned
-        uses: actions/upload-artifact@v4
-        with:
-          name: unsigned-installers
-          path: release/CRM-Easy-Setup-*.exe
-      - name: Sign installers (SignPath Foundation)
-        id: signpath
-        # Free code signing via SignPath Foundation (signpath.org) — requires an
-        # OSI license (MIT) and the repo secrets/variables below. The step is
-        # skipped until the project is approved and the secrets are configured.
-        if: ${{ secrets.SIGNPATH_API_TOKEN != '' }}
-        uses: signpath/github-action-submit-signing-request@v2
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-          wait-for-completion: true
-          output-artifact-directory: signed
-      - name: Upload signed installers
-        uses: softprops/action-gh-release@v2
-        if: steps.signpath.outcome == 'success'
-        with:
-          files: signed/*.exe
-      - name: Upload installers (unsigned fallback)
-        uses: softprops/action-gh-release@v2
-        if: steps.signpath.outcome != 'success'
-        with:
-          files: release/CRM-Easy-Setup-*.exe
+      - run: echo "release triggered on ${{ github.ref }}"
