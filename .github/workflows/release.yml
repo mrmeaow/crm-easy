@@ -58,34 +58,7 @@ jobs:
         run: npx electron-builder --win nsis --x64 --arm64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload unsigned installers (for SignPath)
-        id: upload-unsigned
-        uses: actions/upload-artifact@v4
-        with:
-          name: unsigned-installers
-          path: release/CRM-Easy-Setup-*.exe
-      - name: Sign installers (SignPath Foundation)
-        id: signpath
-        # Free code signing via SignPath Foundation (signpath.org) — requires an
-        # OSI license (MIT) and the repo secrets/variables below. The step is
-        # skipped until the project is approved and the secrets are configured.
-        if: ${{ secrets.SIGNPATH_API_TOKEN != '' }}
-        uses: signpath/github-action-submit-signing-request@v2
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-          wait-for-completion: true
-          output-artifact-directory: signed
-      - name: Upload signed installers
+      - name: Upload release assets
         uses: softprops/action-gh-release@v2
-        if: steps.signpath.outcome == 'success'
-        with:
-          files: signed/*.exe
-      - name: Upload installers (unsigned fallback)
-        uses: softprops/action-gh-release@v2
-        if: steps.signpath.outcome != 'success'
         with:
           files: release/CRM-Easy-Setup-*.exe
