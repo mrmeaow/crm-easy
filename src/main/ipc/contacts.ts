@@ -1,5 +1,5 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron'
-import { desc, eq, inArray, and } from 'drizzle-orm'
+import { ipcMain } from 'electron'
+import { desc, eq, inArray, and, isNull } from 'drizzle-orm'
 import { IpcChannels } from '@shared/ipc'
 import type {
   ContactInput,
@@ -8,10 +8,11 @@ import type {
   ImportResult,
   MergeGroup,
 } from '@shared/types'
-import { parseCsv, sanitizeCell } from '@shared/imports'
+import { sanitizeCell } from '@shared/imports'
 import { getDb } from '../db'
 import { contacts, activities, notes, tasks, deals, leads, contactTags } from '../db/schema'
-import { readFileSync } from 'node:fs'
+import { readRowsFromFile, pickImportFile } from '../importFile'
+import { recordUndo } from './undo'
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
@@ -25,60 +26,14 @@ function firstNonNull(values: (string | null | undefined)[]): string | null | un
   return values.find((v) => v !== null && v !== undefined && v.trim() !== '')
 }
 
-async function readRowsFromFile(filePath: string): Promise<string[][]> {
-  if (filePath.toLowerCase().endsWith('.csv')) {
-    return parseCsv(readFileSync(filePath, 'utf8'))
-  }
-  const ExcelJS = await import('exceljs')
-  const workbook = new ExcelJS.Workbook()
-  await workbook.xlsx.readFile(filePath)
-  const worksheet = workbook.worksheets[0]
-  if (!worksheet) return []
-  const rows: string[][] = []
-  worksheet.eachRow((row) => {
-    const cells = row.values as (string | number | Date)[]
-    rows.push(cells.slice(1).map(sanitizeCell))
-  })
-  return rows
-}
-
-async function pickImportFile(): Promise<ImportPreview> {
-  const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
-  const result = win
-    ? await dialog.showOpenDialog(win, {
-        title: 'Import contacts',
-        properties: ['openFile'],
-        filters: [
-          { name: 'Spreadsheets', extensions: ['csv', 'xlsx'] },
-          { name: 'All files', extensions: ['*'] },
-        ],
-      })
-    : { canceled: true, filePaths: [] as string[] }
-
-  if (result.canceled || result.filePaths.length === 0) return { canceled: true }
-
-  const filePath = result.filePaths[0]
-  const fileName = filePath.split(/[\\/]/).pop() ?? filePath
-
-  const rows = await readRowsFromFile(filePath)
-  if (rows.length < 2)
-    return { canceled: true, filePath, fileName, headers: rows[0] ?? [], rows: [], totalRows: 0 }
-
-  const headers = rows[0]
-  const totalRows = rows.length - 1
-  return {
-    canceled: false,
-    filePath,
-    fileName,
-    headers,
-    rows: rows.slice(1, Math.min(31, rows.length)),
-    totalRows,
-  }
-}
-
 export function registerContactsIpc(): void {
   ipcMain.handle(IpcChannels.contacts.list, () => {
-    return getDb().select().from(contacts).orderBy(desc(contacts.createdAt)).all()
+    return getDb()
+      .select()
+      .from(contacts)
+      .where(isNull(contacts.deletedAt))
+      .orderBy(desc(contacts.createdAt))
+      .all()
   })
 
   ipcMain.handle(IpcChannels.contacts.create, (_event, input: ContactInput) => {
@@ -103,11 +58,23 @@ export function registerContactsIpc(): void {
   )
 
   ipcMain.handle(IpcChannels.contacts.remove, (_event, id: number) => {
-    getDb().delete(contacts).where(eq(contacts.id, id)).run()
+    const db = getDb()
+    const contact = db.select().from(contacts).where(eq(contacts.id, id)).get()
+    if (contact && contact.deletedAt === null) {
+      recordUndo(
+        'contact',
+        id,
+        `${contact.firstName} ${contact.lastName ?? ''}`.trim() || contact.email || `#${id}`,
+      )
+      db.update(contacts)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(contacts.id, id))
+        .run()
+    }
   })
 
   ipcMain.handle(IpcChannels.contacts.mergeGroups, (): MergeGroup[] => {
-    const all = getDb().select().from(contacts).all()
+    const all = getDb().select().from(contacts).where(isNull(contacts.deletedAt)).all()
     const buckets = new Map<string, number[]>()
 
     for (const contact of all) {
@@ -202,7 +169,7 @@ export function registerContactsIpc(): void {
   })
 
   ipcMain.handle(IpcChannels.contacts.importParse, (): Promise<ImportPreview> => {
-    return pickImportFile()
+    return pickImportFile('Import contacts')
   })
 
   ipcMain.handle(

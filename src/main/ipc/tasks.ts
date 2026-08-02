@@ -4,10 +4,16 @@ import { IpcChannels } from '@shared/ipc'
 import type { TaskInput } from '@shared/types'
 import { getDb } from '../db'
 import { tasks } from '../db/schema'
+import { recordUndo } from './undo'
 
 export function registerTasksIpc(): void {
   ipcMain.handle(IpcChannels.tasks.list, () => {
-    return getDb().select().from(tasks).orderBy(asc(tasks.dueAt), asc(tasks.id)).all()
+    return getDb()
+      .select()
+      .from(tasks)
+      .where(isNull(tasks.deletedAt))
+      .orderBy(asc(tasks.dueAt), asc(tasks.id))
+      .all()
   })
 
   ipcMain.handle(IpcChannels.tasks.create, (_event, input: TaskInput) => {
@@ -36,7 +42,15 @@ export function registerTasksIpc(): void {
   })
 
   ipcMain.handle(IpcChannels.tasks.remove, (_event, id: number) => {
-    getDb().delete(tasks).where(eq(tasks.id, id)).run()
+    const db = getDb()
+    const task = db.select().from(tasks).where(eq(tasks.id, id)).get()
+    if (task && task.deletedAt === null) {
+      recordUndo('task', id, task.title || `#${id}`)
+      db.update(tasks)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(tasks.id, id))
+        .run()
+    }
   })
 }
 
@@ -51,7 +65,14 @@ function checkReminders(): void {
   const due = getDb()
     .select()
     .from(tasks)
-    .where(and(lt(tasks.reminderAt, now), isNull(tasks.reminderSentAt), eq(tasks.done, false)))
+    .where(
+      and(
+        lt(tasks.reminderAt, now),
+        isNull(tasks.reminderSentAt),
+        eq(tasks.done, false),
+        isNull(tasks.deletedAt),
+      ),
+    )
     .all()
 
   for (const task of due) {

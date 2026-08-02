@@ -15,6 +15,20 @@
       "when": 1785651141820,
       "tag": "0001_add_task_reminder_sent",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785663167774,
+      "tag": "0002_add_deal_log_custom_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785663801273,
+      "tag": "0003_add_deal_log_custom_fields_undo",
+      "breakpoints": true
     }
   ]
 }

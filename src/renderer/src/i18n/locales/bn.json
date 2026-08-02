@@ -15,12 +15,13 @@
   "common": {
     "search": "অনুসন্ধান…",
     "save": "সংরক্ষণ",
+    "saved": "সংরক্ষিত হয়েছে",
     "cancel": "বাতিল",
-    "delete": "মুছে ফেলুন",
+    "delete": "মুছুন",
     "add": "যোগ করুন",
-    "empty": "এখানে এখনো কিছু নেই",
+    "empty": "এখানে কিছু নেই",
     "loading": "লোড হচ্ছে…",
-    "error": "কিছু একটা সমস্যা হয়েছে",
+    "error": "কিছু সমস্যা হয়েছে",
     "confirmDelete": "আপনি কি নিশ্চিত? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
     "edit": "সম্পাদনা",
     "close": "বন্ধ করুন",
@@ -185,9 +186,65 @@
     "empty": "এখনো কোনো কাজ নেই — প্রথমটি যোগ করুন।",
     "noDate": "নির্ধারিত সময় নেই"
   },
+  "tags": {
+    "label": "ট্যাগ",
+    "add": "ট্যাগ যোগ",
+    "empty": "কোনো ট্যাগ নেই",
+    "newPlaceholder": "নতুন ট্যাগের নাম…"
+  },
+  "customField": {
+    "fields": "কাস্টম ফিল্ড",
+    "labelPlaceholder": "ফিল্ডের নাম…",
+    "typeText": "টেক্সট",
+    "typeNumber": "সংখ্যা",
+    "typeDate": "তারিখ",
+    "typeSelect": "ড্রপডাউন",
+    "selectOptionsPlaceholder": "অপশন (কমা দিয়ে আলাদা)",
+    "noFields": "এই সত্তার জন্য কোনো কাস্টম ফিল্ড নেই। Settings-এ যোগ করুন।"
+  },
+  "dealHistory": {
+    "tab": "ইতিহাস",
+    "empty": "এখনো কোনো ইতিহাস নেই।",
+    "action": {
+      "created": "তৈরি হয়েছে",
+      "stageChange": "পর্যায় পরিবর্তন",
+      "won": "জয়",
+      "lost": "পরাজয়",
+      "valueChange": "মূল্য পরিবর্তন"
+    }
+  },
+  "undo": {
+    "deleted": "\"{{label}}\" মুছে ফেলা হয়েছে",
+    "restore": "পূর্বাবস্থায় ফেরান"
+  },
+  "search": {
+    "noResults": "কোনো ফলাফল পাওয়া যায়নি"
+  },
+  "lock": {
+    "title": "অ্যাপ লক করা",
+    "enterPin": "পিন দিন",
+    "unlock": "আনলক",
+    "wrongPin": "ভুল পিন"
+  },
   "reports": {
     "title": "রিপোর্ট ও এক্সপোর্ট",
-    "subtitle": "আপনার ডেটা Excel বা CSV-তে এক্সপোর্ট করুন"
+    "subtitle": "আপনার ডেটা Excel বা CSV-তে এক্সপোর্ট করুন",
+    "totalContacts": "যোগাযোগ",
+    "totalLeads": "লিড",
+    "totalDeals": "সব ডিল",
+    "wonDeals": "জয়ী",
+    "lostDeals": "পরাজিত",
+    "wonValue": "{{value}} জয়",
+    "lostValue": "{{value}} পরাজয়",
+    "pipelineValue": "পাইপলাইন মূল্য",
+    "pipelineByStage": "পর্যায় অনুযায়ী ডিল",
+    "leadSources": "লিড উৎস",
+    "count": "সংখ্যা",
+    "from": "থেকে",
+    "to": "পর্যন্ত",
+    "activitiesInRange": "কার্যকলাপ",
+    "totalActivities": "মোট",
+    "unknown": "নির্ধারিত নয়"
   },
   "export": {
     "entityLabel": "কী এক্সপোর্ট করবেন",
@@ -215,6 +272,9 @@
     "created": "ব্যাকআপ তৈরি হয়েছে",
     "restored": "ডেটা পুনরুদ্ধার করা হয়েছে",
     "invalid": "ফাইলটি বৈধ ব্যাকআপ নয়।",
+    "badPassphrase": "ভুল পাসফ্রেজ।",
+    "outdated": "এই ব্যাকআপটি পুরনো সংস্করণের এবং পুনরুদ্ধার করা যাবে না।",
+    "passphrasePlaceholder": "ব্যাকআপ পাসফ্রেজ",
     "scheduleTitle": "স্বয়ংক্রিয় ব্যাকআপ",
     "scheduleHint": "অ্যাপ চলাকালীন সময়সূচি অনুযায়ী ব্যাকআপ নেওয়া হয়। পুরনো ব্যাকআপ নির্ধারিত সংখ্যক রাখা হয়।",
     "scheduleEnabled": "নির্ধারিত ব্যাকআপ সক্রিয় করুন",
@@ -236,6 +296,19 @@
     "themeSystem": "সিস্টেম",
     "currency": "মুদ্রা",
     "currencyHint": "ডিলের মূল্য ও রিপোর্টে ব্যবহৃত হয়।",
+    "appLock": "অ্যাপ লক",
+    "pinEnabled": "পিন সেট করা আছে।",
+    "pinDisabled": "কোনো পিন নেই।",
+    "enterNewPin": "নতুন পিন (৪-৮ অংক)",
+    "savePin": "পিন সংরক্ষণ",
+    "dataSafety": "ডেটা নিরাপত্তা",
+    "encryption": "ব্যাকআপ এনক্রিপ্ট",
+    "encryptionHint": "এনক্রিপ্ট করা ব্যাকআপ পুনরুদ্ধারে পাসফ্রেজ লাগবে। OS কী-চেইনে নিরাপদে সংরক্ষিত।",
+    "encryptionPassphrase": "এনক্রিপশন পাসফ্রেজ",
+    "encryptionPassphraseHint": "কমপক্ষে ৬ অক্ষর প্রয়োজন।",
+    "customFields": "কাস্টম ফিল্ড",
+    "customFieldsHint": "যোগাযোগ, লিড ও ডিলের জন্য অতিরিক্ত ফিল্ড সংজ্ঞায়িত করুন।",
+    "PIN_TOO_SHORT": "পিন কমপক্ষে ৪ অংকের হতে হবে।",
     "about": "সম্পর্কে",
     "version": "সংস্করণ",
     "data": "ডেটা ও স্টোরেজ",

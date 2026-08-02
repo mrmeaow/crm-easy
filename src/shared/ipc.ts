@@ -24,6 +24,28 @@ export const IpcChannels = {
     remove: 'leads:remove',
     move: 'leads:move',
     convert: 'leads:convert',
+    importParse: 'leads:importParse',
+    importRun: 'leads:importRun',
+  },
+  tags: {
+    list: 'tags:list',
+    create: 'tags:create',
+    forContact: 'tags:forContact',
+    assign: 'tags:assign',
+  },
+  customFields: {
+    listDefs: 'customFields:listDefs',
+    createDef: 'customFields:createDef',
+    deleteDef: 'customFields:deleteDef',
+    listValues: 'customFields:listValues',
+    saveValues: 'customFields:saveValues',
+  },
+  search: {
+    query: 'search:query',
+  },
+  undo: {
+    list: 'undo:list',
+    restore: 'undo:restore',
   },
   stages: {
     list: 'stages:list',
@@ -38,6 +60,7 @@ export const IpcChannels = {
     update: 'deals:update',
     remove: 'deals:remove',
     settle: 'deals:settle',
+    history: 'deals:history',
   },
   tasks: {
     list: 'tasks:list',
@@ -48,6 +71,13 @@ export const IpcChannels = {
   settings: {
     get: 'settings:get',
     set: 'settings:set',
+    hasPin: 'settings:hasPin',
+    setPin: 'settings:setPin',
+    verifyPin: 'settings:verifyPin',
+    encryptPassphrase: 'settings:encryptPassphrase',
+  },
+  reports: {
+    activities: 'reports:activities',
   },
   export: {
     run: 'export:run',

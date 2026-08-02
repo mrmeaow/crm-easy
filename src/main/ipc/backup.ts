@@ -9,10 +9,10 @@ export function registerBackupIpc(): void {
     return createBackup(win)
   })
 
-  ipcMain.handle(IpcChannels.backup.restore, async (event) => {
+  ipcMain.handle(IpcChannels.backup.restore, async (event, passphrase: string | null) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return { restored: false }
-    const result = await restoreBackup(win)
+    const result = await restoreBackup(win, passphrase ?? null)
     if (result.restored) {
       win.webContents.reload()
     }

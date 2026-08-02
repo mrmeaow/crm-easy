@@ -1,4 +1,4 @@
-import type { ImportField, ImportMapping } from './types'
+import type { ImportEntity, ImportField, ImportMapping } from './types'
 
 /** Parse CSV text into rows. Handles quoted fields, escaped quotes, CRLF. */
 export function parseCsv(text: string): string[][] {
@@ -46,7 +46,14 @@ export function parseCsv(text: string): string[][] {
   return rows
 }
 
-export const IMPORT_FIELDS: ImportField[] = [
+export type ContactImportField =
+  'firstName' | 'lastName' | 'phone' | 'email' | 'company' | 'address' | 'notes'
+
+export type LeadImportField = 'name' | 'phone' | 'email' | 'source' | 'expectedValue' | 'owner'
+
+/** Import fields per entity. The identity fields come first. */
+/** Import fields for contacts (used by the renderer import modal). */
+export const CONTACT_IMPORT_FIELDS: ContactImportField[] = [
   'firstName',
   'lastName',
   'phone',
@@ -56,7 +63,13 @@ export const IMPORT_FIELDS: ImportField[] = [
   'notes',
 ]
 
-const HEADER_ALIASES: Record<ImportField, string[]> = {
+/** Import fields per entity. */
+export const IMPORT_FIELDS: Record<ImportEntity, ImportField[]> = {
+  contact: CONTACT_IMPORT_FIELDS,
+  lead: ['name', 'phone', 'email', 'source', 'expectedValue', 'owner'] satisfies LeadImportField[],
+}
+
+const HEADER_ALIASES: Record<string, string[]> = {
   firstName: [
     'firstname',
     'first name',
@@ -90,21 +103,27 @@ const HEADER_ALIASES: Record<ImportField, string[]> = {
   ],
   address: ['address', 'street', 'street address', 'address line', 'location'],
   notes: ['notes', 'note', 'remarks', 'comment', 'comments', 'description'],
+  source: ['source', 'lead source', 'origin', 'channel'],
+  expectedValue: ['expected value', 'expected_value', 'value', 'amount', 'deal size'],
+  owner: ['owner', 'assigned to', 'assignee', 'sales rep', 'agent'],
 }
 
-const HEADER_LOOKUP = new Map<string, ImportField>(
+const HEADER_LOOKUP = new Map<string, string>(
   Object.entries(HEADER_ALIASES).flatMap(([field, aliases]) =>
-    aliases.map((alias) => [alias, field as ImportField]),
+    aliases.map((alias) => [alias, field]),
   ),
 )
 
-/** Automatically map headers to contact fields via alias matching. */
-export function autoMapColumns(headers: string[]): ImportMapping {
-  const mapping = Object.fromEntries(IMPORT_FIELDS.map((f) => [f, null])) as ImportMapping
+/** Automatically map headers to fields via alias matching. */
+export function autoMapColumns(headers: string[], entity: ImportEntity = 'contact'): ImportMapping {
+  const fields = IMPORT_FIELDS[entity]
+  const mapping = Object.fromEntries(fields.map((f) => [f, null])) as ImportMapping
   headers.forEach((header, index) => {
     const normalized = header.trim().toLowerCase().replace(/\s+/g, ' ')
     const field = HEADER_LOOKUP.get(normalized)
-    if (field && mapping[field] === null) mapping[field] = index
+    if (field && field in mapping && mapping[field as ImportField] === null) {
+      mapping[field as ImportField] = index
+    }
   })
   return mapping
 }

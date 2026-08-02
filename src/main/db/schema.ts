@@ -30,6 +30,7 @@ export const contacts = sqliteTable(
     company: text('company'),
     address: text('address'),
     notes: text('notes'),
+    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
     ...timestamps(),
   },
   (t) => [
@@ -89,6 +90,7 @@ export const leads = sqliteTable(
     convertedContactId: integer('converted_contact_id').references(() => contacts.id, {
       onDelete: 'set null',
     }),
+    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
     ...timestamps(),
   },
   (t) => [
@@ -112,6 +114,7 @@ export const deals = sqliteTable(
     owner: text('owner'),
     wonAt: integer('won_at', { mode: 'timestamp_ms' }),
     lostReason: text('lost_reason'),
+    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
     ...timestamps(),
   },
   (t) => [index('deals_stage_idx').on(t.stageId), index('deals_contact_idx').on(t.contactId)],
@@ -145,6 +148,7 @@ export const tasks = sqliteTable(
     completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
     contactId: integer('contact_id').references(() => contacts.id, { onDelete: 'set null' }),
     dealId: integer('deal_id').references(() => deals.id, { onDelete: 'set null' }),
+    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
     ...timestamps(),
   },
   (t) => [index('tasks_due_idx').on(t.dueAt), index('tasks_done_idx').on(t.done)],
@@ -160,6 +164,54 @@ export const notes = sqliteTable(
     ...timestamps(),
   },
   (t) => [index('notes_entity_idx').on(t.entityType, t.entityId)],
+)
+
+export const dealLog = sqliteTable(
+  'deal_log',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    dealId: integer('deal_id')
+      .notNull()
+      .references(() => deals.id, { onDelete: 'cascade' }),
+    // 'created' | 'stage_change' | 'won' | 'lost' | 'value_change'
+    action: text('action').notNull(),
+    fromStageId: integer('from_stage_id'),
+    toStageId: integer('to_stage_id'),
+    note: text('note'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [index('deal_log_deal_idx').on(t.dealId)],
+)
+
+export const customFieldDefs = sqliteTable(
+  'custom_field_defs',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    entityType: text('entity_type').notNull(), // contact | lead | deal
+    label: text('label').notNull(),
+    // 'text' | 'number' | 'date' | 'select'
+    type: text('type').notNull().default('text'),
+    // JSON array of options for type 'select'
+    options: text('options'),
+    position: integer('position').notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [index('custom_field_defs_entity_idx').on(t.entityType)],
+)
+
+export const customFieldValues = sqliteTable(
+  'custom_field_values',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    defId: integer('def_id')
+      .notNull()
+      .references(() => customFieldDefs.id, { onDelete: 'cascade' }),
+    entityId: integer('entity_id').notNull(),
+    value: text('value'),
+  },
+  (t) => [uniqueIndex('custom_field_values_def_entity_idx').on(t.defId, t.entityId)],
 )
 
 export const settings = sqliteTable('settings', {

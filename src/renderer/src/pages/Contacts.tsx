@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   useContacts,
@@ -8,9 +8,15 @@ import {
   useMergeContacts,
   useUpdateContact,
 } from '../api/contacts'
+import { useTags, useTagsForContact, useAssignTags, useCreateTag } from '../api/tags'
+import {
+  useCustomFieldDefs,
+  useCustomFieldValues,
+  useSaveCustomFieldValues,
+} from '../api/customFields'
 import { formatDate } from '@shared/format'
 import { useSettings } from '../store/settings'
-import { autoMapColumns, IMPORT_FIELDS } from '@shared/imports'
+import { autoMapColumns, CONTACT_IMPORT_FIELDS } from '@shared/imports'
 import type {
   Contact,
   ContactInput,
@@ -128,10 +134,200 @@ function ContactFormModal({
         </div>
         {entityId !== null && (
           <div className="modal-section">
+            <TagsSection contactId={entityId} />
+          </div>
+        )}
+        {entityId !== null && (
+          <div className="modal-section">
+            <CustomFieldsSection contactId={entityId} />
+          </div>
+        )}
+        {entityId !== null && (
+          <div className="modal-section">
             <EntityTimeline entityType="contact" entityId={entityId} />
           </div>
         )}
       </form>
+    </div>
+  )
+}
+
+function TagsSection({ contactId }: { contactId: number }): React.JSX.Element {
+  const { t } = useTranslation()
+  const { data: allTags } = useTags()
+  const { data: contactTags } = useTagsForContact(contactId)
+  const assignTags = useAssignTags()
+  const createTag = useCreateTag()
+  const [showPicker, setShowPicker] = useState(false)
+  const [newTagName, setNewTagName] = useState('')
+
+  const tagIds = new Set((contactTags ?? []).map((tag) => tag.id))
+
+  function toggleTag(tagId: number) {
+    const next = tagIds.has(tagId) ? [...tagIds].filter((id) => id !== tagId) : [...tagIds, tagId]
+    void assignTags.mutateAsync({ contactId, tagIds: next })
+  }
+
+  function handleCreateTag() {
+    if (!newTagName.trim()) return
+    void createTag
+      .mutateAsync({ name: newTagName.trim() })
+      .then((tag) => {
+        const next = [...tagIds, tag.id]
+        return assignTags.mutateAsync({ contactId, tagIds: next })
+      })
+      .then(() => {
+        setNewTagName('')
+        setShowPicker(false)
+      })
+  }
+
+  return (
+    <div className="tags-section">
+      <div className="tags-header">
+        <strong>{t('tags.label')}</strong>
+        <button className="btn btn-sm" onClick={() => setShowPicker((v) => !v)}>
+          + {t('tags.add')}
+        </button>
+      </div>
+      <div className="tag-list">
+        {(contactTags ?? []).map((tag) => (
+          <span key={tag.id} className="tag-badge" style={{ background: tag.color ?? undefined }}>
+            {tag.name}
+            <button
+              className="tag-remove"
+              onClick={() => toggleTag(tag.id)}
+              aria-label={`Remove ${tag.name}`}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        {(contactTags ?? []).length === 0 && <span className="muted">{t('tags.empty')}</span>}
+      </div>
+      {showPicker && (
+        <div className="tag-picker">
+          <div className="tag-picker-row">
+            <input
+              className="input"
+              placeholder={t('tags.newPlaceholder')}
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  void handleCreateTag()
+                }
+              }}
+            />
+            <button className="btn btn-sm" onClick={() => void handleCreateTag()}>
+              {t('common.add')}
+            </button>
+          </div>
+          {(allTags ?? [])
+            .filter((tag) => !tagIds.has(tag.id))
+            .map((tag) => (
+              <button key={tag.id} className="tag-picker-item" onClick={() => toggleTag(tag.id)}>
+                <span
+                  className="tag-dot"
+                  style={{ background: tag.color ?? 'var(--text-muted)' }}
+                />
+                {tag.name}
+              </button>
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CustomFieldsSection({ contactId }: { contactId: number }): React.JSX.Element {
+  const { t } = useTranslation()
+  const { data: defs } = useCustomFieldDefs('contact')
+  const { data: values } = useCustomFieldValues('contact', contactId)
+  const saveValues = useSaveCustomFieldValues()
+  const [localValues, setLocalValues] = useState<Record<number, string>>({})
+  const [saved, setSaved] = useState(false)
+
+  const valueMap = useMemo(() => {
+    return new Map((values ?? []).map((v) => [v.defId, v.value ?? '']))
+  }, [values])
+
+  useEffect(() => {
+    const init: Record<number, string> = {}
+    for (const def of defs ?? []) {
+      init[def.id] = valueMap.get(def.id) ?? ''
+    }
+    setLocalValues(init)
+  }, [defs, valueMap])
+
+  function handleSave() {
+    const toSave = Object.entries(localValues).map(([defId, value]) => ({
+      defId: Number(defId),
+      value: value || null,
+    }))
+    void saveValues
+      .mutateAsync({ entityType: 'contact', entityId: contactId, values: toSave })
+      .then(() => {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      })
+  }
+
+  if (!defs || defs.length === 0) return <></>
+
+  return (
+    <div className="custom-fields-section">
+      <div className="cf-section-header">
+        <strong>{t('customField.fields')}</strong>
+        <button
+          className="btn btn-sm"
+          onClick={() => void handleSave()}
+          disabled={saveValues.isPending}
+        >
+          {saved ? t('common.saved') : t('common.save')}
+        </button>
+      </div>
+      {(defs ?? []).map((def) => (
+        <label key={def.id} className="cf-field">
+          <span>{def.label}</span>
+          {def.type === 'select' ? (
+            <select
+              className="select"
+              value={localValues[def.id] ?? ''}
+              onChange={(e) => setLocalValues((prev) => ({ ...prev, [def.id]: e.target.value }))}
+            >
+              <option value="">—</option>
+              {(def.options ?? []).map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          ) : def.type === 'date' ? (
+            <input
+              type="date"
+              className="input"
+              value={localValues[def.id] ?? ''}
+              onChange={(e) => setLocalValues((prev) => ({ ...prev, [def.id]: e.target.value }))}
+            />
+          ) : def.type === 'number' ? (
+            <input
+              type="number"
+              className="input"
+              value={localValues[def.id] ?? ''}
+              onChange={(e) => setLocalValues((prev) => ({ ...prev, [def.id]: e.target.value }))}
+            />
+          ) : (
+            <input
+              type="text"
+              className="input"
+              value={localValues[def.id] ?? ''}
+              onChange={(e) => setLocalValues((prev) => ({ ...prev, [def.id]: e.target.value }))}
+            />
+          )}
+        </label>
+      ))}
     </div>
   )
 }
@@ -153,7 +349,7 @@ function ImportWizard({
     setMapping({ ...mapping, [field]: value === '' ? null : Number(value) })
   }
 
-  const mappedCount = IMPORT_FIELDS.filter((field) => mapping[field] !== null).length
+  const mappedCount = CONTACT_IMPORT_FIELDS.filter((field) => mapping[field] !== null).length
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -172,7 +368,7 @@ function ImportWizard({
             </tr>
           </thead>
           <tbody>
-            {IMPORT_FIELDS.map((field) => (
+            {CONTACT_IMPORT_FIELDS.map((field) => (
               <tr key={field}>
                 <td>{t(`import.fields.${field}`)}</td>
                 <td>

@@ -8,6 +8,10 @@ import { registerExportIpc } from './export'
 import { registerBackupIpc } from './backup'
 import { registerActivitiesIpc } from './activities'
 import { registerNotesIpc } from './notes'
+import { registerTagsIpc } from './tags'
+import { registerCustomFieldsIpc } from './customFields'
+import { registerSearchIpc, registerUndoIpc } from './undo'
+import { registerReportsIpc } from './reports'
 
 export function registerIpc(): void {
   registerContactsIpc()
@@ -20,4 +24,9 @@ export function registerIpc(): void {
   registerBackupIpc()
   registerActivitiesIpc()
   registerNotesIpc()
+  registerTagsIpc()
+  registerCustomFieldsIpc()
+  registerSearchIpc()
+  registerUndoIpc()
+  registerReportsIpc()
 }

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useContacts } from '../api/contacts'
 import { useDeals } from '../api/deals'
 import { useLeads, useStages } from '../api/leads'
+import { useActivitiesInRange } from '../api/reports'
 import { exportFileName, toExportDate } from '@shared/export'
-import type { Contact, Deal, ExportColumn, Lead } from '@shared/types'
+import type { Contact, Deal, ExportColumn, Lead, PipelineStage } from '@shared/types'
 
 type EntityKey = 'contacts' | 'leads' | 'deals'
 
@@ -22,18 +23,80 @@ function Reports(): React.JSX.Element {
   const { data: leads } = useLeads()
   const { data: deals } = useDeals()
   const { data: stages } = useStages()
+
   const [entity, setEntity] = useState<EntityKey>('contacts')
   const [selected, setSelected] = useState<Set<string> | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Date range for activities report — computed once via useMemo so handlers keep stable refs
+  const now = useMemo(() => new Date(), [])
+  const thirtyDaysAgo = useMemo(() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return d
+  }, [])
+  const [fromDate, setFromDate] = useState(thirtyDaysAgo.toISOString().slice(0, 10))
+  const [toDate, setToDate] = useState(now.toISOString().slice(0, 10))
+  const { data: activitiesInRange } = useActivitiesInRange(
+    new Date(fromDate),
+    new Date(toDate + 'T23:59:59'),
+  )
+
+  const stageMap = useMemo(() => {
+    return new Map<number, PipelineStage>((stages ?? []).map((s) => [s.id, s]))
+  }, [stages])
+
+  // Summary stats
+  const summaryStats = useMemo(() => {
+    const wonDeals = (deals ?? []).filter((d) => d.wonAt != null)
+    const lostDeals = (deals ?? []).filter((d) => d.lostReason != null)
+    const pipelineDeals = (deals ?? []).filter((d) => d.wonAt == null && d.lostReason == null)
+    const leadSources = new Map<string, number>()
+    for (const lead of leads ?? []) {
+      const src = lead.source ?? ''
+      leadSources.set(src, (leadSources.get(src) ?? 0) + 1)
+    }
+    return {
+      totalContacts: (contacts ?? []).length,
+      totalLeads: (leads ?? []).length,
+      convertedLeads: (leads ?? []).filter((l) => l.convertedContactId != null).length,
+      totalDeals: (deals ?? []).length,
+      wonDeals: wonDeals.length,
+      lostDeals: lostDeals.length,
+      wonValue: wonDeals.reduce((s, d) => s + d.value, 0),
+      lostValue: lostDeals.reduce((s, d) => s + d.value, 0),
+      pipelineValue: pipelineDeals.reduce((s, d) => s + d.value, 0),
+      pipelineByStage: Array.from(stageMap.values()).map((stage) => {
+        const stageDeals = pipelineDeals.filter((d) => d.stageId === stage.id)
+        return {
+          stageId: stage.id,
+          stageName: stage.name,
+          count: stageDeals.length,
+          value: stageDeals.reduce((s, d) => s + d.value, 0),
+        }
+      }),
+      leadSources: Array.from(leadSources.entries())
+        .filter(([src]) => src !== '')
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8),
+      activitiesByType: Object.fromEntries(
+        ['call', 'meeting', 'email', 'note'].map((type) => [
+          type,
+          (activitiesInRange ?? []).filter((a) => a.type === type).length,
+        ]),
+      ),
+      activitiesTotal: (activitiesInRange ?? []).length,
+    }
+  }, [contacts, leads, deals, stageMap, activitiesInRange])
+
   const stageName = (id: number | null): string =>
-    id == null ? '—' : (stages?.find((stage) => stage.id === id)?.name ?? '—')
+    id == null ? '—' : (stageMap.get(id ?? -1)?.name ?? '—')
 
   const contactName = (id: number | null): string => {
     if (id == null) return '—'
-    const contact = contacts?.find((item) => item.id === id)
+    const contact = (contacts ?? []).find((item) => item.id === id)
     return contact ? `${contact.firstName} ${contact.lastName ?? ''}`.trim() : '—'
   }
 
@@ -190,6 +253,128 @@ function Reports(): React.JSX.Element {
         </div>
       </header>
 
+      {/* Summary Cards */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <span className="stat-value">{summaryStats.totalContacts}</span>
+          <span className="stat-label">{t('reports.totalContacts')}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{summaryStats.totalLeads}</span>
+          <span className="stat-label">{t('reports.totalLeads')}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{summaryStats.totalDeals}</span>
+          <span className="stat-label">{t('reports.totalDeals')}</span>
+        </div>
+        <div className="stat-card stat-won">
+          <span className="stat-value">{summaryStats.wonDeals}</span>
+          <span className="stat-label">{t('reports.wonDeals')}</span>
+          <span className="stat-sub">
+            {t('reports.wonValue', { value: summaryStats.wonValue })}
+          </span>
+        </div>
+        <div className="stat-card stat-lost">
+          <span className="stat-value">{summaryStats.lostDeals}</span>
+          <span className="stat-label">{t('reports.lostDeals')}</span>
+          <span className="stat-sub">
+            {t('reports.lostValue', { value: summaryStats.lostValue })}
+          </span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{summaryStats.pipelineValue.toLocaleString()}</span>
+          <span className="stat-label">{t('reports.pipelineValue')}</span>
+        </div>
+      </div>
+
+      {/* Pipeline Stage Breakdown */}
+      {summaryStats.pipelineByStage.some((s) => s.count > 0) && (
+        <div className="card report-section">
+          <h3>{t('reports.pipelineByStage')}</h3>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('deals.stage')}</th>
+                <th className="num">{t('reports.count')}</th>
+                <th className="num">{t('deals.value')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaryStats.pipelineByStage
+                .filter((s) => s.count > 0)
+                .map((s) => (
+                  <tr key={s.stageId}>
+                    <td>{s.stageName}</td>
+                    <td className="num">{s.count}</td>
+                    <td className="num">{s.value.toLocaleString()}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Lead Sources */}
+      {summaryStats.leadSources.length > 0 && (
+        <div className="card report-section">
+          <h3>{t('reports.leadSources')}</h3>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('leads.source')}</th>
+                <th className="num">{t('reports.count')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaryStats.leadSources.map(([source, count]) => (
+                <tr key={source}>
+                  <td>{source || t('reports.unknown')}</td>
+                  <td className="num">{count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Activities in Date Range */}
+      <div className="card report-section">
+        <h3>{t('reports.activitiesInRange')}</h3>
+        <div className="form-row">
+          <label>
+            {t('reports.from')}
+            <input
+              type="date"
+              className="input"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+          </label>
+          <label>
+            {t('reports.to')}
+            <input
+              type="date"
+              className="input"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
+          </label>
+        </div>
+        <div className="stats-grid stats-grid-sm">
+          {(['call', 'meeting', 'email', 'note'] as const).map((type) => (
+            <div key={type} className="stat-card">
+              <span className="stat-value">{summaryStats.activitiesByType[type]}</span>
+              <span className="stat-label">{t(`activity.type.${type}`)}</span>
+            </div>
+          ))}
+          <div className="stat-card">
+            <span className="stat-value">{summaryStats.activitiesTotal}</span>
+            <span className="stat-label">{t('reports.totalActivities')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Export section */}
       <div className="settings-list">
         <div className="card export-card">
           <strong className="export-label">{t('export.entityLabel')}</strong>

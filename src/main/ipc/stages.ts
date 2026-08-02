@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { asc, eq, max, count } from 'drizzle-orm'
+import { asc, eq, max, count, and, isNull } from 'drizzle-orm'
 import { IpcChannels } from '@shared/ipc'
 import type { PipelineStageInput } from '@shared/types'
 import { getDb } from '../db'
@@ -34,8 +34,16 @@ export function registerStagesIpc(): void {
 
   ipcMain.handle(IpcChannels.stages.remove, (_event, id: number) => {
     const db = getDb()
-    const leadCount = db.select({ c: count() }).from(leads).where(eq(leads.stageId, id)).get()
-    const dealCount = db.select({ c: count() }).from(deals).where(eq(deals.stageId, id)).get()
+    const leadCount = db
+      .select({ c: count() })
+      .from(leads)
+      .where(and(eq(leads.stageId, id), isNull(leads.deletedAt)))
+      .get()
+    const dealCount = db
+      .select({ c: count() })
+      .from(deals)
+      .where(and(eq(deals.stageId, id), isNull(deals.deletedAt)))
+      .get()
     if ((leadCount?.c ?? 0) > 0 || (dealCount?.c ?? 0) > 0) {
       throw new Error('STAGE_IN_USE')
     }

@@ -4,6 +4,7 @@ import type { ActivityType, EntityType } from '@shared/types'
 import { formatDateTime } from '@shared/format'
 import { useActivities, useCreateActivity } from '../api/activities'
 import { useCreateNote, useNotes } from '../api/notes'
+import { useDealHistory } from '../api/dealHistory'
 import { useSettings } from '../store/settings'
 
 const ACTIVITY_TYPES: ActivityType[] = ['call', 'email', 'meeting', 'note', 'other']
@@ -16,12 +17,15 @@ interface EntityTimelineProps {
 function EntityTimeline({ entityType, entityId }: EntityTimelineProps): React.JSX.Element {
   const { t } = useTranslation()
   const { language } = useSettings()
-  const { data: activities, isLoading } = useActivities(entityType, entityId)
+  const { data: activities, isLoading: activitiesLoading } = useActivities(entityType, entityId)
   const { data: notes, isLoading: notesLoading } = useNotes(entityType, entityId)
+  const { data: dealHistory, isLoading: historyLoading } = useDealHistory(
+    entityType === 'deal' ? entityId : null,
+  )
   const createActivity = useCreateActivity()
   const createNote = useCreateNote()
 
-  const [tab, setTab] = useState<'timeline' | 'notes'>('timeline')
+  const [tab, setTab] = useState<'timeline' | 'notes' | 'history'>('timeline')
   const [activityType, setActivityType] = useState<ActivityType>('call')
   const [subject, setSubject] = useState('')
   const [detail, setDetail] = useState('')
@@ -56,6 +60,23 @@ function EntityTimeline({ entityType, entityId }: EntityTimelineProps): React.JS
     )
   }
 
+  const historyActionLabel = (action: string): string => {
+    switch (action) {
+      case 'created':
+        return t('dealHistory.action.created')
+      case 'stage_change':
+        return t('dealHistory.action.stageChange')
+      case 'won':
+        return t('dealHistory.action.won')
+      case 'lost':
+        return t('dealHistory.action.lost')
+      case 'value_change':
+        return t('dealHistory.action.valueChange')
+      default:
+        return action
+    }
+  }
+
   return (
     <div className="timeline">
       <div className="segmented" role="tablist">
@@ -75,6 +96,16 @@ function EntityTimeline({ entityType, entityId }: EntityTimelineProps): React.JS
         >
           {t('timeline.notes')}
         </button>
+        {entityType === 'deal' && (
+          <button
+            type="button"
+            className={tab === 'history' ? 'active' : ''}
+            onClick={() => setTab('history')}
+            role="tab"
+          >
+            {t('dealHistory.tab')}
+          </button>
+        )}
       </div>
 
       {tab === 'timeline' && (
@@ -113,8 +144,8 @@ function EntityTimeline({ entityType, entityId }: EntityTimelineProps): React.JS
           </form>
 
           <div className="timeline-list">
-            {isLoading && <p className="muted">{t('common.loading')}</p>}
-            {(activities?.length ?? 0) === 0 && !isLoading && (
+            {activitiesLoading && <p className="muted">{t('common.loading')}</p>}
+            {(activities?.length ?? 0) === 0 && !activitiesLoading && (
               <p className="muted">{t('timeline.empty')}</p>
             )}
             {activities?.map((activity) => (
@@ -169,6 +200,27 @@ function EntityTimeline({ entityType, entityId }: EntityTimelineProps): React.JS
             ))}
           </div>
         </>
+      )}
+
+      {tab === 'history' && entityType === 'deal' && (
+        <div className="history-list">
+          {historyLoading && <p className="muted">{t('common.loading')}</p>}
+          {(dealHistory?.length ?? 0) === 0 && !historyLoading && (
+            <p className="muted">{t('dealHistory.empty')}</p>
+          )}
+          {dealHistory?.map((entry) => (
+            <div key={entry.id} className="timeline-item">
+              <span className={`timeline-dot type-${entry.action}`} aria-hidden="true" />
+              <div className="timeline-body">
+                <div className="timeline-head">
+                  <strong>{historyActionLabel(entry.action)}</strong>
+                  <span className="muted">{formatDateTime(entry.createdAt, language)}</span>
+                </div>
+                {entry.note && <p>{entry.note}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )

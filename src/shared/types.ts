@@ -58,6 +58,7 @@ export interface LeadInput {
   phone?: string | null
   email?: string | null
   source?: string | null
+  status?: string
   owner?: string | null
   expectedValue?: number | null
   expectedCloseDate?: Date | null
@@ -96,6 +97,11 @@ export interface DealSettleInput {
   outcome: 'won' | 'lost'
   actualValue?: number
   reason?: string | null
+}
+
+export interface LeadConvertResult {
+  contact: Contact
+  deal: Deal
 }
 
 export interface Task {
@@ -165,7 +171,17 @@ export interface MergeGroup {
 }
 
 export type ImportField =
-  'firstName' | 'lastName' | 'phone' | 'email' | 'company' | 'address' | 'notes'
+  | 'firstName'
+  | 'lastName'
+  | 'phone'
+  | 'email'
+  | 'company'
+  | 'address'
+  | 'notes'
+  | 'name'
+  | 'source'
+  | 'owner'
+  | 'expectedValue'
 
 export type ImportMapping = Record<ImportField, number | null>
 
@@ -199,3 +215,95 @@ export type ExportResult = { saved: boolean; path?: string }
 export type SettingsKey = 'language' | 'theme' | 'currency'
 
 export type SettingsRecord = Record<string, string>
+
+export interface Tag {
+  id: number
+  name: string
+  color: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface TagInput {
+  name: string
+  color?: string | null
+}
+
+export type CustomFieldType = 'text' | 'number' | 'date' | 'select'
+
+export interface CustomFieldDef {
+  id: number
+  entityType: EntityType
+  label: string
+  type: CustomFieldType
+  options: string[] | null
+  position: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CustomFieldDefInput {
+  entityType: EntityType
+  label: string
+  type: CustomFieldType
+  options?: string[] | null
+}
+
+export interface CustomFieldValue {
+  id: number
+  defId: number
+  entityId: number
+  value: string | null
+}
+
+export type DealLogAction = 'created' | 'stage_change' | 'won' | 'lost' | 'value_change'
+
+export interface DealLogEntry {
+  id: number
+  dealId: number
+  action: DealLogAction
+  fromStageId: number | null
+  toStageId: number | null
+  note: string | null
+  createdAt: Date
+}
+
+export interface SearchResults {
+  contacts: Pick<Contact, 'id' | 'firstName' | 'lastName' | 'phone' | 'email' | 'company'>[]
+  leads: Pick<Lead, 'id' | 'name' | 'phone' | 'email'>[]
+  deals: Pick<Deal, 'id' | 'title' | 'value'>[]
+  tasks: Pick<Task, 'id' | 'title' | 'dueAt' | 'done'>[]
+  notes: Pick<Note, 'id' | 'body' | 'entityType' | 'entityId'>[]
+}
+
+export type UndoEntity = 'contact' | 'lead' | 'deal' | 'task'
+
+export interface UndoEntry {
+  entity: UndoEntity
+  id: number
+  label: string
+  createdAt: Date
+}
+
+export type ImportEntity = 'contact' | 'lead'
+
+export interface ReportTotals {
+  count: number
+  sum?: number
+}
+
+export interface DealStats {
+  totalDeals: number
+  wonDeals: number
+  lostDeals: number
+  totalValue: number
+  wonValue: number
+  lostValue: number
+  pipelineByStage: Array<{ stageId: number; stageName: string; count: number; value: number }>
+}
+
+export interface LeadStats {
+  totalLeads: number
+  convertedLeads: number
+  bySource: Array<{ source: string; count: number }>
+}

@@ -15,6 +15,7 @@
   "common": {
     "search": "Search…",
     "save": "Save",
+    "saved": "Saved",
     "cancel": "Cancel",
     "delete": "Delete",
     "add": "Add",
@@ -185,9 +186,65 @@
     "empty": "No tasks yet — add your first one.",
     "noDate": "No due date"
   },
+  "tags": {
+    "label": "Tags",
+    "add": "Add tag",
+    "empty": "No tags assigned",
+    "newPlaceholder": "New tag name…"
+  },
+  "customField": {
+    "fields": "Custom fields",
+    "labelPlaceholder": "Field name…",
+    "typeText": "Text",
+    "typeNumber": "Number",
+    "typeDate": "Date",
+    "typeSelect": "Dropdown",
+    "selectOptionsPlaceholder": "Options (comma-separated)",
+    "noFields": "No custom fields defined for this entity. Add them in Settings."
+  },
+  "dealHistory": {
+    "tab": "History",
+    "empty": "No history yet.",
+    "action": {
+      "created": "Created",
+      "stageChange": "Stage changed",
+      "won": "Marked won",
+      "lost": "Marked lost",
+      "valueChange": "Value changed"
+    }
+  },
+  "undo": {
+    "deleted": "\"{{label}}\" deleted",
+    "restore": "Undo"
+  },
+  "search": {
+    "noResults": "No results found"
+  },
+  "lock": {
+    "title": "App Locked",
+    "enterPin": "Enter PIN",
+    "unlock": "Unlock",
+    "wrongPin": "Incorrect PIN"
+  },
   "reports": {
     "title": "Reports & Export",
-    "subtitle": "Export your data to Excel or CSV"
+    "subtitle": "Export your data to Excel or CSV",
+    "totalContacts": "Contacts",
+    "totalLeads": "Leads",
+    "totalDeals": "All Deals",
+    "wonDeals": "Won",
+    "lostDeals": "Lost",
+    "wonValue": "{{value}} won",
+    "lostValue": "{{value}} lost",
+    "pipelineValue": "Pipeline value",
+    "pipelineByStage": "Deals by stage",
+    "leadSources": "Lead sources",
+    "count": "Count",
+    "from": "From",
+    "to": "To",
+    "activitiesInRange": "Activities",
+    "totalActivities": "Total",
+    "unknown": "Not set"
   },
   "export": {
     "entityLabel": "What to export",
@@ -215,6 +272,9 @@
     "created": "Backup created",
     "restored": "Data restored",
     "invalid": "That file is not a valid backup.",
+    "badPassphrase": "Incorrect passphrase.",
+    "outdated": "This backup is from an older version and cannot be restored.",
+    "passphrasePlaceholder": "Backup passphrase",
     "scheduleTitle": "Automatic backups",
     "scheduleHint": "Backup on a schedule while the app runs. Old backups are pruned to the retention count.",
     "scheduleEnabled": "Enable scheduled backups",
@@ -236,6 +296,19 @@
     "themeSystem": "System",
     "currency": "Currency",
     "currencyHint": "Used for deal values and reports.",
+    "appLock": "App lock",
+    "pinEnabled": "PIN is set.",
+    "pinDisabled": "No PIN set.",
+    "enterNewPin": "New PIN (4–8 digits)",
+    "savePin": "Save PIN",
+    "dataSafety": "Data safety",
+    "encryption": "Encrypt backups",
+    "encryptionHint": "Encrypted backups require a passphrase to restore. Stored securely via OS keychain.",
+    "encryptionPassphrase": "Encryption passphrase",
+    "encryptionPassphraseHint": "At least 6 characters required.",
+    "customFields": "Custom fields",
+    "customFieldsHint": "Define extra fields for contacts, leads, and deals.",
+    "PIN_TOO_SHORT": "PIN must be at least 4 digits.",
     "about": "About",
     "version": "Version",
     "data": "Data & Storage",
